@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab Music - Auto Login</title>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-8" x-data="musicApp()" x-init="checkAutoLogin()"> <div x-show="isLoading" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+    <p class="text-indigo-600 font-bold animate-bounce">Đang kiểm tra phiên đăng nhập...</p>
+</div>
+
+<div x-show="!accessToken && !isLoading" class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-2xl mb-6 font-bold text-center text-indigo-600">Đăng Nhập</h2>
+    <div class="space-y-4">
+        <input type="text" x-model="user" placeholder="Username" class="w-full p-2 border rounded">
+        <input type="password" x-model="pass" placeholder="Password" class="w-full p-2 border rounded">
+        <button @click="login()" class="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">Đăng Nhập</button>
+    </div>
+</div>
+
+<div x-show="accessToken" class="max-w-5xl mx-auto">
+    <div class="bg-white p-4 rounded shadow mb-6 flex justify-between items-center border-l-4 border-indigo-500">
+        <div>
+            <p class="font-bold">Chào mừng trở lại: <span class="text-indigo-600" x-text="userInfo?.userName"></span></p>
+            <p class="text-sm italic text-gray-500" x-text="'Quyền hạn: ' + userInfo?.role"></p>
+        </div>
+        <button @click="logout()" class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600">Đăng xuất</button>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-100 uppercase text-xs">
+            <tr><th class="p-4 text-left">Tiêu đề</th><th class="p-4 text-left">Nghệ sĩ</th><th class="p-4 text-left">Dành cho</th></tr>
+            </thead>
+            <tbody>
+            <template x-for="song in songs" :key="song.id">
+                <tr class="border-b hover:bg-indigo-50 transition">
+                    <td class="p-4 font-medium" x-text="song.title"></td>
+                    <td class="p-4 text-gray-600" x-text="song.artist"></td>
+                    <td class="p-4"><span class="px-2 py-1 bg-gray-200 rounded text-[10px]" x-text="song.forUser"></span></td>
+                </tr>
+            </template>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-6 flex justify-center items-center gap-4">
+        <button @click="changePage(page - 1)" :disabled="page === 0" class="px-3 py-1 bg-white border rounded disabled:opacity-30">&larr;</button>
+        <span class="text-sm">Trang <b x-text="page + 1"></b> / <span x-text="totalPages"></span></span>
+        <button @click="changePage(page + 1)" :disabled="page + 1 >= totalPages" class="px-3 py-1 bg-white border rounded disabled:opacity-30">&rarr;</button>
+    </div>
+</div>
+
+<script>
+    function musicApp() {
+        return {
+            user: '', pass: '', accessToken: '', userInfo: null,
+            songs: [], page: 0, size: 5, totalPages: 0, isLoading: true,
+
+            // 1. Tự động kiểm tra Cookie khi vừa load trang
+            async checkAutoLogin() {
+                console.log("Đang kiểm tra Cookie refresh...");
+                try {
+                    const res = await fetch('http://localhost:8080/api/auth/refresh-token', {
+                        credentials: 'include' // Gửi kèm cookie để check
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        this.accessToken = data.token;
+                        this.userInfo = data.user;
+
+                        await this.fetchSongs();
+                        console.log("Tự động đăng nhập thành công!");
+                    }
+                } catch (e) {
+                    console.log("Không có phiên đăng nhập cũ.");
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+
+            async apiFetch(url, options = {}) {
+                options.headers = { ...options.headers, 'Authorization': `Bearer ${this.accessToken}` };
+                options.credentials = 'include';
+                let response = await fetch(url, options);
+
+                if (response.status === 401 && this.accessToken) {
+                    const refreshRes = await fetch('http://localhost:8080/api/auth/refresh-token', { credentials: 'include' });
+                    if (refreshRes.ok) {
+                        this.accessToken = await refreshRes.text();
+                        options.headers['Authorization'] = `Bearer ${this.accessToken}`;
+                        return await fetch(url, options);
+                    } else {
+                        this.logout();
+                    }
+                }
+                return response;
+            },
+
+            async login() {
+                const res = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                    body: JSON.stringify({ userName: this.user, password: this.pass })
+                });
+                if(res.ok) {
+                    const data = await res.json();
+                    this.accessToken = data.token;
+                    this.userInfo = data.user;
+                    this.fetchSongs();
+                } else { alert("Sai tài khoản!"); }
+            },
+
+            async fetchSongs() {
+                const endpoint = (this.userInfo.role === 'VIP') ? '/songs/admin' : '/songs/normal';
+                const res = await this.apiFetch(`http://localhost:8080/api${endpoint}?page=${this.page}&size=${this.size}`);
+                if (res.ok) {
+                    const pageData = await res.json();
+                    // Chú ý: Handle cả List hoặc Page tùy theo Backend trả về
+                    this.songs = pageData.content || pageData;
+                    this.totalPages = pageData.totalPages || 1;
+                }
+            },
+
+            changePage(p) { this.page = p; this.fetchSongs(); },
+            async logout() {
+                try {
+                    // 1. Gọi API Backend để xóa Cookie refresh ở phía Server
+                    await fetch('http://localhost:8080/api/auth/logout', {
+                        method: 'GET',
+                        credentials: 'include' // Bắt buộc để gửi lệnh xóa Cookie
+                    });
+
+                    // 2. Xóa thông tin ở phía Client (Frontend)
+                    this.accessToken = '';
+                    this.userInfo = null;
+                    this.songs = [];
+                    this.page = 0;
+
+                    console.log("Đã đăng xuất và xóa Cookie thành công.");
+                } catch (e) {
+                    console.error("Lỗi khi gọi API logout:", e);
+                    // Vẫn xóa dữ liệu ở client dù API lỗi để đảm bảo an toàn
+                    this.accessToken = '';
+                    this.userInfo = null;
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>
