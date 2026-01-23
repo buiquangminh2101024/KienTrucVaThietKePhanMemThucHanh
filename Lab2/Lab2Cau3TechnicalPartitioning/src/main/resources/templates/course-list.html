@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<h1>Danh sách khóa học</h1>
+<ul>
+    <li th:each="c : ${courses}">
+        <span th:text="${c.name}"></span> - <b th:text="${c.lecturer}"></b>
+    </li>
+</ul>
+<a href="/enroll">Đi đến trang đăng ký</a>
+</body>
+</html>
