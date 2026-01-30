@@ -1,0 +1,80 @@
+workspace "Event Ticketing Platform" "Sơ đồ Component - Level 3" {
+
+    model {
+        khachHang = person "Khách hàng" "Người dùng đặt vé." "UserTag"
+        admin = person "Admin" "Quản trị viên hệ thống." "AdminTag"
+
+        eventSystem = softwareSystem "Event Ticketing Platform" {
+            webApp = container "Web Application" "Giao diện React" "WebAppTag"
+            database = container "Database" "PostgreSQL" "DBTag"
+            
+            # Phân rã API Application
+            apiApp = container "API Application" "Cung cấp logic nghiệp vụ qua JSON/HTTPS API" "Spring Boot" "APITag" {
+                authController = component "Security Component" "Xử lý Đăng nhập, Đăng ký và Phân quyền." "Spring Security" "ComponentTag"
+                eventController = component "Event Management Component" "Quản lý tạo, duyệt và tìm kiếm sự kiện." "Spring MVC" "ComponentTag"
+                ticketController = component "Ticket & Order Component" "Xử lý đặt vé, thanh toán và quản lý đơn hàng." "Spring MVC" "ComponentTag"
+                reportController = component "Reporting Component" "Kết xuất dữ liệu thống kê cho Admin và Nhà tổ chức." "Spring MVC" "ComponentTag"
+            }
+        }
+        
+        paymentGateway = softwareSystem "Cổng thanh toán" "ExternalSystem"
+
+        # Relationships (Mối quan hệ cấp Component)
+        khachHang -> webApp "Sử dụng"
+        webApp -> authController "Gửi yêu cầu đăng nhập/đăng ký" "HTTPS"
+        webApp -> eventController "Tìm kiếm/Xem sự kiện" "HTTPS"
+        webApp -> ticketController "Đặt vé và xem đơn hàng" "HTTPS"
+        admin -> reportController "Xem báo cáo thống kê" "HTTPS"
+
+        # Tương tác nội bộ API và Database
+        authController -> database "Xác thực thông tin" "SQL"
+        eventController -> database "Truy vấn sự kiện" "SQL"
+        ticketController -> database "Lưu đơn hàng & cập nhật vé" "SQL"
+        ticketController -> paymentGateway "Thực hiện thanh toán" "HTTPS"
+        reportController -> database "Truy vấn dữ liệu thống kê" "SQL"
+    }
+
+    views {
+        component apiApp "Components" {
+            include *
+            autoLayout lr
+            description "Sơ đồ Component bên trong API Application."
+        }
+
+        styles {
+            element "UserTag" {
+                background #A0D2FF
+                color #000000
+                shape Person
+            }
+            element "AdminTag" {
+                background #A0A5FA
+                color #000000
+                shape Person
+            }
+            element "WebAppTag" {
+                background #9BDCB4
+                color #000000
+            }
+            element "APITag" {
+                background #141E64
+                color #ffffff
+            }
+            element "ComponentTag" {
+                background #A0A5FA 
+                color #000000
+                shape Component
+            }
+            element "DBTag" {
+                background #EB2D4B
+                color #ffffff
+                shape Cylinder
+            }
+            element "ExternalSystem" {
+                background #ffffff
+                color #000000
+                border dashed
+            }
+        }
+    }
+}

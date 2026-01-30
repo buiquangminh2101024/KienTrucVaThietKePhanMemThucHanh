@@ -1,0 +1,52 @@
+workspace "Plugin-based CMS" "Microkernel Architecture" {
+    model {
+        user = person "Quản trị viên" "Quản lý hệ thống"
+        cms = softwareSystem "Plugin-based CMS (Microkernel)" {
+            core = container "Microkernel Core" "Hệ thống lõi" "Java" "CoreTag"
+            
+            editorPlugin = container "Editor Plugin" "Soạn thảo" "Plugin" "PluginTag"
+            seoPlugin = container "SEO Plugin" "Tối ưu SEO" "Plugin" "PluginTag"
+            mediaPlugin = container "Media Plugin" "Quản lý ảnh" "Plugin" "PluginTag"
+            
+            db = container "Core DB" "Cấu hình" "MySQL" "DBTag"
+        }
+
+        user -> core "Cấu hình"
+        core -> editorPlugin "Mở rộng"
+        core -> seoPlugin "Phân tích"
+        core -> mediaPlugin "Xử lý file"
+        core -> db "Lưu trữ"
+    }
+    views {
+        container cms "MicrokernelView" {
+            include *
+            autoLayout lr
+        }
+        styles {
+            # Bảng màu từ image_9ba0ff.png
+            element "CoreTag" {
+                background #3C284B
+                color #ffffff
+            }
+            element "PluginTag" {
+                background #C7D7FB
+                color #000000
+                shape Component
+            }
+            element "DBTag" {
+                background #FEC4B6
+                color #000000
+                shape Cylinder
+            }
+            element "Person" {
+                background #8F89B7
+                color #ffffff
+                shape Person
+            }
+            element "Container" {
+                background #F1B0DA
+                color #000000
+            }
+        }
+    }
+}

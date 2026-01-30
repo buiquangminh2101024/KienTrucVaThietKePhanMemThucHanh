@@ -1,0 +1,47 @@
+workspace "Plugin-based CMS" "Layered Architecture" {
+    model {
+        user = person "Người dùng" "Sử dụng CMS để quản lý nội dung"
+        cms = softwareSystem "Plugin-based CMS (Layered)" {
+            presentation = container "Presentation Layer" "Giao diện & Request" "React" "Color1"
+            business = container "Business Layer" "Logic nghiệp vụ" "Spring Boot" "Color2"
+            persistence = container "Persistence Layer" "Truy xuất dữ liệu" "JPA" "Color3"
+            database = container "Database" "Lưu trữ dữ liệu" "PostgreSQL" "Color4"
+        }
+        
+        user -> presentation "Sử dụng"
+        presentation -> business "Gọi logic"
+        business -> persistence "Yêu cầu dữ liệu"
+        persistence -> database "Đọc/Ghi"
+    }
+    views {
+        container cms "LayeredView" {
+            include *
+            autoLayout tb
+        }
+        styles {
+            # Bảng màu từ image_9ba140.png
+            element "Color1" {
+                background #070544
+                color #ffffff
+            }
+            element "Color2" {
+                background #361D9D
+                color #ffffff
+            }
+            element "Color3" {
+                background #E04483
+                color #ffffff
+            }
+            element "Color4" {
+                background #FAC140
+                color #000000
+                shape Cylinder
+            }
+            element "Person" {
+                shape Person
+                background #E67FC4
+                color #ffffff
+            }
+        }
+    }
+}

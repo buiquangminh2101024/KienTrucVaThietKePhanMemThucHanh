@@ -1,0 +1,58 @@
+workspace "Event Ticketing Platform" "Sơ đồ bối cảnh với bảng màu tùy chỉnh" {
+
+    model {
+        khachVangLai = person "Khách vãng lai" "Người dùng tìm kiếm sự kiện." "UserTag"
+        khachHang = person "Khách hàng" "Người dùng đặt vé & quản lý đơn hàng." "UserTag"
+        admin = person "Admin" "Quản trị viên hệ thống." "AdminTag"
+        nhaToChuc = person "Người tổ chức" "Tạo sự kiện & quản lý doanh thu." "AdminTag"
+
+        eventSystem = softwareSystem "Event Ticketing Platform" "Hệ thống quản lý vé và sự kiện trung tâm." "MainSystem"
+        
+        paymentGateway = softwareSystem "Cổng thanh toán" "VNPay, Momo, v.v." "ExternalSystem"
+
+        # Relationships
+        khachVangLai -> eventSystem "Xem sự kiện"
+        khachHang -> eventSystem "Đặt vé và thanh toán"
+        admin -> eventSystem "Quản trị và thống kê"
+        nhaToChuc -> eventSystem "Quản lý sự kiện và khuyến mãi"
+        eventSystem -> paymentGateway "Xử lý giao dịch"
+    }
+
+    views {
+        systemContext eventSystem "SystemContext" {
+            include *
+            autoLayout lr
+        }
+
+        styles {
+            # Áp dụng bảng màu từ ảnh của bạn
+            
+            element "UserTag" {
+                background #A0D2FF
+                color #000000
+                shape Person
+            }
+            
+            element "AdminTag" {
+                background #A0A5FA
+                color #000000
+                shape Person
+            }
+
+            element "MainSystem" {
+                background #141E64
+                color #ffffff
+            }
+
+            element "ExternalSystem" {
+                background #EB2D4B
+                color #ffffff
+            }
+
+            relationship "Relationship" {
+                color #222222
+                fontSize 24
+            }
+        }
+    }
+}

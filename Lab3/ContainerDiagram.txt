@@ -1,0 +1,70 @@
+workspace "Event Ticketing Platform" "Sơ đồ Container - Level 2" {
+
+    model {
+        khachVangLai = person "Khách vãng lai" "Người dùng tìm kiếm sự kiện." "UserTag"
+        khachHang = person "Khách hàng" "Người dùng đặt vé & quản lý đơn hàng." "UserTag"
+        admin = person "Admin" "Quản trị viên hệ thống." "AdminTag"
+        nhaToChuc = person "Người tổ chức" "Tạo sự kiện & quản lý doanh thu." "AdminTag"
+
+        eventSystem = softwareSystem "Event Ticketing Platform" "Hệ thống quản lý vé và sự kiện." {
+            # Định nghĩa các Containers bên trong
+            webApp = container "Web Application" "Cung cấp giao diện cho người dùng và nhà tổ chức." "React/Next.js" "WebAppTag"
+            adminConsole = container "Admin Console" "Giao diện dành riêng cho quản trị viên." "Angular" "AdminTag"
+            apiApp = container "API Application" "Cung cấp logic nghiệp vụ qua JSON/HTTPS API." "Spring Boot/Node.js" "APITag"
+            database = container "Database" "Lưu trữ thông tin người dùng, sự kiện, vé và giao dịch." "PostgreSQL/MySQL" "DBTag"
+        }
+        
+        paymentGateway = softwareSystem "Cổng thanh toán" "VNPay, Momo, v.v." "ExternalSystem"
+
+        # Relationships (Mối quan hệ)
+        khachVangLai -> webApp "Xem sự kiện"
+        khachHang -> webApp "Đặt vé và quản lý cá nhân"
+        nhaToChuc -> webApp "Tạo và quản lý sự kiện"
+        admin -> adminConsole "Quản trị hệ thống"
+
+        webApp -> apiApp "Gửi yêu cầu API" "HTTPS"
+        adminConsole -> apiApp "Gửi yêu cầu quản trị" "HTTPS"
+        apiApp -> database "Đọc/Ghi dữ liệu" "SQL"
+        apiApp -> paymentGateway "Thanh toán" "HTTPS"
+    }
+
+    views {
+        container eventSystem "Containers" {
+            include *
+            autoLayout lr
+            description "Sơ đồ Container cho Hệ thống Quản lý sự kiện & vé trực tuyến."
+        }
+
+        styles {
+            # Sử dụng bảng màu sặc sỡ từ ảnh của bạn
+            
+            element "UserTag" {
+                background #A0D2FF
+                color #000000
+                shape Person
+            }
+            element "AdminTag" {
+                background #A0A5FA
+                color #000000
+            }
+            element "WebAppTag" {
+                background #9BDCB4
+                color #000000
+            }
+            element "APITag" {
+                background #141E64
+                color #ffffff
+            }
+            element "DBTag" {
+                background #EB2D4B
+                color #ffffff
+                shape Cylinder
+            }
+            element "ExternalSystem" {
+                background #ffffff
+                color #000000
+                border dashed
+            }
+        }
+    }
+}
