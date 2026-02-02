@@ -1,0 +1,77 @@
+workspace "Event Ticketing Platform" "Sơ đồ bối cảnh chuẩn" {
+
+    model {
+        # Định nghĩa các tác nhân (Actors)
+        khachHang = person "Khách hàng" "Người dùng đặt vé & quản lý đơn hàng." "UserTag"
+        admin = person "Admin" "Quản trị viên hệ thống." "AdminTag"
+        nhaToChuc = person "Người tổ chức" "Tạo sự kiện & quản lý doanh thu." "AdminTag"
+
+        # Hệ thống trung tâm
+        eventSystem = softwareSystem "Event Ticketing Platform" "Hệ thống quản lý vé và sự kiện trung tâm." "MainSystem"
+        
+        # Các hệ thống bên ngoài
+        paymentGateway = softwareSystem "Cổng thanh toán" "VNPay, Momo, v.v." "ExternalSystem"
+        googleMaps = softwareSystem "Google Maps" "Cung cấp dữ liệu bản đồ và vị trí sự kiện." "ExternalSystem"
+        emailService = softwareSystem "Email Service" "Hệ thống gửi email thông báo, xác nhận vé." "ExternalSystem"
+        cloudStorage = softwareSystem "Cloud Storage" "Lưu trữ ảnh sự kiện và file vé PDF." "ExternalSystem"
+
+        # Các mối quan hệ (Relationships)
+        khachHang -> eventSystem "Đặt vé và thanh toán"
+        admin -> eventSystem "Quản trị và thống kê"
+        nhaToChuc -> eventSystem "Quản lý sự kiện và khuyến mãi"
+        
+        eventSystem -> paymentGateway "Xử lý giao dịch"
+        eventSystem -> googleMaps "Lấy dữ liệu bản đồ và tọa độ"
+        eventSystem -> cloudStorage "Lưu trữ và truy xuất tài nguyên"
+        
+        eventSystem -> emailService "Yêu cầu gửi thông báo/vé"
+        emailService -> khachHang "Gửi email xác nhận và vé điện tử"
+    }
+
+    views {
+        systemContext eventSystem "SystemContext" {
+            include *
+            autoLayout tb
+        }
+
+        styles {
+            # Style chung: Ô rộng, viền dày, nền trắng
+            element "Element" {
+                background #ffffff
+                strokeWidth 4
+                fontSize 28
+                width 450
+                height 300
+            }
+
+            element "UserTag" {
+                stroke #A0D2FF
+                color #000000
+                shape Person
+            }
+            
+            element "AdminTag" {
+                stroke #A0A5FA
+                color #000000
+                shape Person
+            }
+
+            element "MainSystem" {
+                stroke #141E64
+                color #141E64
+            }
+
+            element "ExternalSystem" {
+                stroke #EB2D4B
+                color #EB2D4B
+            }
+
+            relationship "Relationship" {
+                color #222222
+                fontSize 24
+                thickness 3
+                routing Direct
+            }
+        }
+    }
+}
