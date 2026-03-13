@@ -1,0 +1,43 @@
+workspace "CMS Microkernel Architecture" "Sơ đồ kiến trúc Microkernel cho CMS" {
+
+    model {
+        user = person "Quản trị viên" "Cài đặt và sử dụng các tính năng"
+
+        cmsSystem = softwareSystem "Hệ thống CMS" {
+            core = container "Microkernel (Core System)" "Chứa logic khởi tạo, quản lý vòng đời và kết nối các Plug-in."
+            
+            authPlugin = container "Auth Plug-in" "Module quản lý đăng nhập và phân quyền."
+            editorPlugin = container "Editor Plug-in" "Module trình soạn thảo nội dung (WYSIWYG)."
+            seoPlugin = container "SEO Plug-in" "Module tối ưu hóa tìm kiếm."
+            mediaPlugin = container "Media Plug-in" "Module quản lý hình ảnh/video."
+            
+            db = container "Database" "Lưu trữ dữ liệu hệ thống." "Database"
+        }
+
+        user -> core "Tương tác với hệ thống chính"
+        core -> authPlugin "Gọi module xác thực"
+        core -> editorPlugin "Sử dụng bộ soạn thảo"
+        core -> seoPlugin "Phân tích nội dung"
+        core -> mediaPlugin "Truy xuất file"
+        
+        authPlugin -> db "Kiểm tra user"
+        editorPlugin -> db "Lưu bài viết"
+    }
+
+    views {
+        container cmsSystem "Microkernel" {
+            include *
+            autoLayout lr
+        }
+
+        styles {
+            element "Container" {
+                background #08427b
+                color #ffffff
+            }
+            element "Database" {
+                shape Cylinder
+            }
+        }
+    }
+}

@@ -1,0 +1,35 @@
+workspace "CMS Layered Architecture" "Sơ đồ kiến trúc phân lớp cho hệ thống CMS" {
+
+    model {
+        user = person "Người dùng" "Admin/Editor/Viewer"
+        
+        softwareSystem = softwareSystem "Hệ thống CMS" {
+            presentationLayer = container "Presentation Layer" "Xử lý giao diện, nhận request từ người dùng (React/Thymeleaf/HTML)."
+            businessLayer = container "Business/Service Layer" "Xử lý logic nghiệp vụ: Duyệt bài, Phân quyền, Quản lý nội dung."
+            persistenceLayer = container "Persistence/Data Access Layer" "Giao tiếp với Database qua các Repository/DAO."
+            databaseLayer = container "Database Layer" "Lưu trữ dữ liệu bài viết, người dùng, cấu hình." "Database"
+        }
+
+        user -> presentationLayer "Sử dụng trình duyệt"
+        presentationLayer -> businessLayer "Gọi các dịch vụ nghiệp vụ"
+        businessLayer -> persistenceLayer "Yêu cầu truy xuất dữ liệu"
+        persistenceLayer -> databaseLayer "Đọc/Ghi dữ liệu"
+    }
+
+    views {
+        container softwareSystem "Layers" {
+            include *
+            autoLayout
+        }
+
+        styles {
+            element "Container" {
+                background #1168bd
+                color #ffffff
+            }
+            element "Database" {
+                shape Cylinder
+            }
+        }
+    }
+}

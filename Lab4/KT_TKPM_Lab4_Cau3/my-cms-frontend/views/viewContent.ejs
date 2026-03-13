@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Content</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <h1>Content List</h1>
+    <% if (typeof error !== 'undefined') { %>
+        <p style="color: red;"><%= error %></p>
+    <% } %>
+    <% if (contents && contents.length > 0) { %>
+        <% contents.forEach(item => { %>
+            <div class="content-item">
+                <h2><%= item.Title %></h2>
+                <p><%= item.Body %></p>
+                <small>By: <%= item.Author.Username %> | Created: <%= item.CreatedAt %></small>
+            </div>
+        <% }); %>
+    <% } else if (!error) { %>
+        <p>No content available.</p>
+    <% } %>
+    <a href="/">Back to Home</a>
+</body>
+</html>
