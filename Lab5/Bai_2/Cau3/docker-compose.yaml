@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # Dịch vụ MySQL Database
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: my_database
+      MYSQL_USER: user1
+      MYSQL_PASSWORD: user1_password
+    # (Tùy chọn) Lưu trữ dữ liệu để không bị mất khi xóa container
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # Dịch vụ PHPMyAdmin để quản lý giao diện Web
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - "8081:80" # Yêu cầu đề bài chạy trên cổng 8081
+    environment:
+      - PMA_HOST=db      # Kết nối tới dịch vụ có tên là 'db' ở trên
+      - PMA_PORT=3306
+      - MYSQL_ROOT_PASSWORD=root_password # Dùng pass root để đăng nhập nhanh
+
+volumes:
+  mysql_data:

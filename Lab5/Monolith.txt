@@ -1,0 +1,19 @@
+workspace "Online Food Delivery" "Monolith Architecture" {
+    model {
+        user = person "Khách hàng" "Người dùng đặt đồ ăn trên ứng dụng."
+        
+        softwareSystem = softwareSystem "Food Delivery System (Monolith)" "Hệ thống quản lý toàn bộ quy trình." {
+            webapp = container "Web/Mobile App" "Giao diện người dùng." "React/Flutter"
+            monolith = container "Monolith Server" "Xử lý Menu, Order, Payment." "Java/Go/Node.js" {
+                menuModule = component "Menu Module" "Quản lý danh sách món ăn."
+                orderModule = component "Order Module" "Xử lý đặt hàng."
+                paymentModule = component "Payment Module" "Xử lý thanh toán."
+            }
+            database = container "Central Database" "Lưu trữ tất cả dữ liệu." "PostgreSQL/MySQL"
+        }
+
+        user -> webapp "Sử dụng"
+        webapp -> monolith "Gửi request (REST)"
+        monolith -> database "Đọc/Ghi dữ liệu"
+    }
+}

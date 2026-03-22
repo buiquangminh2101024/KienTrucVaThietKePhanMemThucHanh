@@ -1,0 +1,16 @@
+services:
+  db:
+    image: mysql # Nên chỉ định phiên bản cụ thể thay vì dùng 'latest' để ổn định
+    ports:
+      - "3307:3306"  # Đổi sang 3307 nếu máy bạn đã có MySQL
+    environment:
+      MYSQL_DATABASE: app_data
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - box:/var/lib/mysql # Lưu dữ liệu vào đây để không bị mất khi tắt Docker
+
+volumes:
+  box:

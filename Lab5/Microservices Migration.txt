@@ -1,0 +1,31 @@
+workspace "Online Food Delivery" "Microservices Architecture" {
+    model {
+        user = person "Khách hàng" "Người dùng đặt đồ ăn."
+        
+        softwareSystem = softwareSystem "Food Delivery System" {
+            webapp = container "Web/Mobile App" "Giao diện người dùng." "React/Flutter"
+            apiGateway = container "API Gateway" "Cửa ngõ điều phối request." "NGINX/Kong"
+
+            menuService = container "Menu Service" "Quản lý món ăn và nhà hàng." "Go/Java"
+            orderService = container "Order Service" "Quản lý giỏ hàng và đơn hàng." "Go/Java"
+            paymentService = container "Payment Service" "Xử lý giao dịch thanh toán." "Go/Java"
+
+            menuDb = container "Menu DB" "Dữ liệu món ăn." "MongoDB"
+            orderDb = container "Order DB" "Dữ liệu đơn hàng." "PostgreSQL"
+            paymentDb = container "Payment DB" "Lịch sử thanh toán." "MySQL"
+        }
+
+        user -> webapp "Sử dụng"
+        webapp -> apiGateway "Gửi request"
+        
+        apiGateway -> menuService "Lấy thông tin món"
+        apiGateway -> orderService "Tạo đơn hàng"
+        apiGateway -> paymentService "Thanh toán"
+
+        menuService -> menuDb "Đọc/Ghi"
+        orderService -> orderDb "Đọc/Ghi"
+        paymentService -> paymentDb "Đọc/Ghi"
+        
+        orderService -> paymentService "Giao tiếp Sync/Async để hoàn tất đơn"
+    }
+}

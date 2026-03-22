@@ -1,0 +1,27 @@
+services:
+  backend-service:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: # Cách 1
+      - ./.env
+    depends_on:
+      db-service:
+        condition: service_healthy
+
+  db-service:
+    image: mysql:latest
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment: # Cách 2
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

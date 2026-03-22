@@ -1,0 +1,5 @@
+services:
+  web-service:
+    build: .
+    ports:
+      - "8080:80" # Ánh xạ cổng 8080 trên máy bạn vào cổng 80 của Nginx trong container

@@ -1,0 +1,14 @@
+# services:
+#   my-app:
+#     build: . # Dấu chấm có nghĩa là build tại thư mục hiện tại
+#     ports:
+#       - "3000:3000"
+
+services:
+  web-service:
+    build:
+      context: ./    # Đường dẫn đến thư mục chứa code
+      dockerfile: Dockerfile  # Tên file Dockerfile (nếu bạn đặt tên khác)
+    ports:
+      - "3000:3000"
+    image: hihi # Đặt tên image mới

@@ -1,0 +1,66 @@
+services:
+  # Dịch vụ ReactJS
+  web-service:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - api-service
+
+  # Dịch vụ Api Go
+  api-service:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_HOST=db
+    env_file:
+      - ./.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+  # Dịch vụ MySQL Database
+  db:
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    env_file:
+      - ./.env
+    # (Tùy chọn) Lưu trữ dữ liệu để không bị mất khi xóa container
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      # Kiểm tra cả khả năng phản hồi và quyền truy cập cơ bản
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s       # Kiểm tra mỗi 5 giây là đủ nhanh
+      timeout: 5s        # Chờ tối đa 5s để lệnh thực thi xong
+      retries: 10        # Thử lại 10 lần trước khi báo lỗi
+      start_period: 30s  # Cho MySQL 30s thong thả để khởi tạo lần đầu
+
+  # Dịch vụ PHPMyAdmin để quản lý giao diện Web
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - "8081:80" # Yêu cầu đề bài chạy trên cổng 8081
+    environment:
+      - PMA_HOST=db      # Kết nối tới dịch vụ có tên là 'db' ở trên
+      - PMA_PORT=3306
+      - MYSQL_ROOT_PASSWORD=root # Dùng pass root để đăng nhập nhanh
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:

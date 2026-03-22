@@ -1,0 +1,162 @@
+services:
+  # Dịch vụ ReactJS
+  web-service:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - api-gateway
+
+  # Dịch vụ Api Gateway
+  api-gateway:
+    image: devopsfaith/krakend:latest
+    volumes:
+      - ./krakend.json:/etc/krakend/krakend.json
+    ports:
+      - "8080:8080"
+    depends_on:
+      - menu-service
+      - order-service
+      - payment-service
+    restart: always
+
+  # Dịch vụ Api Go
+  menu-service:
+    build: 
+      context: ./menu-service
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_HOST=menu-db
+    env_file:
+      - ./.env
+    ports:
+      - "8081:8080"
+      - "50051:50051"
+    depends_on:
+      # - menu-db
+      menu-db:
+        condition: service_healthy
+    restart: always
+
+  order-service:
+    build: 
+      context: ./order-service
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_HOST=order-db
+      - MENU_GRPC_ADDR=menu-service:50051
+    env_file:
+      - ./.env
+    ports:
+      - "8082:8080"
+      - "50052:50052"
+    depends_on:
+      # - order-db
+      order-db:
+        condition: service_healthy
+    restart: always
+
+  payment-service:
+    build: 
+      context: ./payment-service
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_HOST=payment-db
+      - ORDER_GRPC_ADDR=order-service:50052
+    env_file:
+      - ./.env
+    ports:
+      - "8083:8080"
+      - "50053:50053"
+    depends_on:
+      # - payment-db
+      payment-db:
+        condition: service_healthy
+    restart: always
+
+  # Dịch vụ MySQL Database
+  menu-db:
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    env_file:
+      - ./.env
+    # (Tùy chọn) Lưu trữ dữ liệu để không bị mất khi xóa container
+    volumes:
+      - mysql_data_menu:/var/lib/mysql
+      - ./menu-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      # Kiểm tra cả khả năng phản hồi và quyền truy cập cơ bản
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s       # Kiểm tra mỗi 5 giây là đủ nhanh
+      timeout: 5s        # Chờ tối đa 5s để lệnh thực thi xong
+      retries: 10        # Thử lại 10 lần trước khi báo lỗi
+      start_period: 30s  # Cho MySQL 30s thong thả để khởi tạo lần đầu
+
+  order-db:
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    env_file:
+      - ./.env
+    # (Tùy chọn) Lưu trữ dữ liệu để không bị mất khi xóa container
+    volumes:
+      - mysql_data_order:/var/lib/mysql
+      - ./order-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      # Kiểm tra cả khả năng phản hồi và quyền truy cập cơ bản
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s       # Kiểm tra mỗi 5 giây là đủ nhanh
+      timeout: 5s        # Chờ tối đa 5s để lệnh thực thi xong
+      retries: 10        # Thử lại 10 lần trước khi báo lỗi
+      start_period: 30s  # Cho MySQL 30s thong thả để khởi tạo lần đầu
+
+  payment-db:
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    env_file:
+      - ./.env
+    # (Tùy chọn) Lưu trữ dữ liệu để không bị mất khi xóa container
+    volumes:
+      - mysql_data_payment:/var/lib/mysql
+      - ./payment-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      # Kiểm tra cả khả năng phản hồi và quyền truy cập cơ bản
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s       # Kiểm tra mỗi 5 giây là đủ nhanh
+      timeout: 5s        # Chờ tối đa 5s để lệnh thực thi xong
+      retries: 10        # Thử lại 10 lần trước khi báo lỗi
+      start_period: 30s  # Cho MySQL 30s thong thả để khởi tạo lần đầu
+
+  # Dịch vụ PHPMyAdmin để quản lý giao diện Web
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - "8084:80"
+    environment:
+      - PMA_HOSTS=menu-db,order-db,payment-db # Quản lý cả 3 DB trong 1 giao diện
+      - MYSQL_ROOT_PASSWORD=root,root,root
+    depends_on:
+      - menu-db
+      - order-db
+      - payment-db
+
+volumes:
+  mysql_data_menu:
+  mysql_data_order:
+  mysql_data_payment:
