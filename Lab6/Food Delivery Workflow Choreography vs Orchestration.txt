@@ -1,0 +1,58 @@
+workspace "Food Delivery Workflow" "Choreography vs Orchestration" {
+
+    model {
+        # Thuộc tính phải nằm trong khối properties
+        properties {
+            "structurizr.groupSeparator" "/"
+        }
+        
+        user = person "Customer" "Đặt món ăn qua ứng dụng."
+
+        group "Food Delivery System" {
+            
+            group "Food Delivery System/Event Choreography" {
+                orderService = softwareSystem "Order Service" "Nhận đơn và phát sự kiện OrderCreated."
+                paymentService = softwareSystem "Payment Service" "Nghe OrderCreated, thực hiện thanh toán."
+                kitchenService = softwareSystem "Kitchen Service" "Nghe PaymentConfirmed, chuẩn bị món."
+                deliveryService = softwareSystem "Delivery Service" "Nghe DishPrepared, gọi shipper."
+                eventBus = softwareSystem "Event Bus (Kafka/RabbitMQ)" "Kênh truyền tin trung gian."
+            }
+
+            group "Food Delivery System/Event Orchestration" {
+                orchestrator = softwareSystem "Order Orchestrator (Saga)" "Quản lý luồng trạng thái tập trung."
+                orderServiceV2 = softwareSystem "Order Service V2"
+                paymentServiceV2 = softwareSystem "Payment Service V2"
+                kitchenServiceV2 = softwareSystem "Kitchen Service V2"
+            }
+        }
+
+        # Quan hệ Choreography
+        user -> orderService "Tạo đơn hàng"
+        orderService -> eventBus "Publish: OrderCreated"
+        eventBus -> paymentService "Subscribe: OrderCreated"
+        paymentService -> eventBus "Publish: PaymentConfirmed"
+        eventBus -> kitchenService "Subscribe: PaymentConfirmed"
+        kitchenService -> eventBus "Publish: DishPrepared"
+        eventBus -> deliveryService "Subscribe: DishPrepared"
+
+        # Quan hệ Orchestration
+        user -> orchestrator "Gửi yêu cầu đặt đơn"
+        orchestrator -> orderServiceV2 "1. Tạo đơn (Command)"
+        orchestrator -> paymentServiceV2 "2. Thanh toán (Command)"
+        orchestrator -> kitchenServiceV2 "3. Nấu ăn (Command)"
+    }
+
+    views {
+        systemLandscape "ChoreographyView" "Mô hình biên đạo dựa trên sự kiện." {
+            include orderService paymentService kitchenService deliveryService eventBus
+            autolayout lr
+        }
+
+        systemLandscape "OrchestrationView" "Mô hình điều phối tập trung." {
+            include orchestrator orderServiceV2 paymentServiceV2 kitchenServiceV2
+            autolayout tb
+        }
+
+        theme default
+    }
+}

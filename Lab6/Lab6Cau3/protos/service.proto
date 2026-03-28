@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "./pb";
+
+// Service cung cấp thông tin món ăn
+service MenuService {
+  rpc GetDish(DishRequest) returns (DishResponse);
+}
+
+// Service cung cấp thông tin đơn hàng
+service OrderService {
+  rpc GetOrder(OrderRequest) returns (OrderResponse);
+  rpc UpdateOrderStatus(UpdateOrderRequest) returns (UpdateOrderResponse);
+}
+
+// Service xử lý thanh toán
+service PaymentService {
+  rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
+}
+
+message DishRequest { uint32 id = 1; }
+message DishResponse {
+  uint32 id = 1;
+  double price = 2;
+  string name = 3;
+}
+
+message OrderRequest { uint32 id = 1; }
+message OrderResponse {
+  uint32 id = 1;
+  bool isHas = 2;
+}
+
+message UpdateOrderRequest {
+  uint32 id = 1;
+  string status = 2;
+}
+message UpdateOrderResponse { bool success = 1; }
+
+message PaymentRequest {
+  uint32 order_id = 1;
+  string payment_method = 2;
+  string transaction_id = 3;
+}
+message PaymentResponse { bool success = 1; }
