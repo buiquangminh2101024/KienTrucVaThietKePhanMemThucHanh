@@ -1,0 +1,6 @@
+python -m venv .venv
+.venv\Scripts\activate
+pip install <package_name>
+pip freeze > requirements.txt
+# Sau này cần tải lại package (nếu có requirements.txt rồi)
+pip install -r requirements.txt

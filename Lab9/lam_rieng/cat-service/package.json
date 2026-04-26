@@ -1,0 +1,37 @@
+{
+  "name": "cat-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:gateway": "tsx src/api-gateway/index.ts",
+    "start:write": "tsx src/write-service/index.ts",
+    "start:read": "tsx src/read-service/index.ts",
+    "start:cache": "tsx src/cache-service/index.ts",
+    "start:all": "concurrently \"npm run start:gateway\" \"npm run start:write\" \"npm run start:read\" \"npm run start:cache\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "amqplib": "^1.0.3",
+    "bloom-filters": "^3.0.4",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mariadb": "^3.5.2",
+    "node-cache": "^5.1.2",
+    "redis": "^5.12.1",
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.0",
+    "@types/uuid": "^10.0.0",
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
