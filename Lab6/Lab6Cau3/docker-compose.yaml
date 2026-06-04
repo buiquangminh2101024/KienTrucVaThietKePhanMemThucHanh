@@ -5,9 +5,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:8080
+      - "80:80"
     depends_on:
       - api-gateway
 
@@ -16,8 +14,6 @@ services:
     image: devopsfaith/krakend:latest
     volumes:
       - ./krakend.json:/etc/krakend/krakend.json
-    ports:
-      - "8080:8080"
     depends_on:
       - menu-service
       - order-service
